@@ -2,20 +2,32 @@ import java.util.*;
 
 import javax.swing.JOptionPane;
 
-import processing.core.PApplet;
-import processing.core.PImage;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.net.Socket;
 
+/*
+* Pegando imagens a serem usadas no jogo
+*/
 String curDir = System.getProperty("user.dir");
-PImage imgX = loadImage(curDir+"/Hash-Game-Online/assets/button_cancel.png");
-PImage imgB = loadImage(curDir+"/Hash-Game-Online/assets/bola.png");
+PImage imgX = loadImage(curDir+"/tic-tac-toe/assets/button_cancel.png");
+PImage imgB = loadImage(curDir+"/tic-tac-toe/assets/bola.png");
 
-public int selecionado = 0;
-int vez = (int)random(0,2);
-int [] [] tabuleiro = new int[3][3];
+/*
+* Variaveis de controle do jogo
+*/
+int selecionado = 0; //qtd. dos quadrinhos já selecionados. Max. 9
+int vez = (int)random(0,2); //Sorteando que vai começar
+int [] [] tabuleiro = new int[3][3]; 
 String [] [] tabEscolhido = new String[3][3];
 
+/*
+* Var. das dimensões usadas
+*/
 int alturaCab = 60; //altura do cabeçalho
-static final int larguraMax = 600, alturaMax = 600;
+int larguraMax = 600, alturaMax = 600;
 
 int w = larguraMax;
 int h = alturaMax;
@@ -23,7 +35,11 @@ int coluna = w/3, linha = h/3;
 int colunaUm = coluna, colunaDois = 2*coluna, colunaTres = w;
 int linhaUm = linha, linhaDois = 2*linha, linhaTres = h;
 
+// Conexão ao servidor
+boolean conectado = conecta();
+
 PrintStream saida;
+Cliente jogador;
 
 public void setup() {
   textFont(createFont("Arial",25));
@@ -31,67 +47,72 @@ public void setup() {
   size(larguraMax,alturaMax+alturaCab);
   background(0xff9900);
   preencheTab();
-  conecta();
 }
 
-public void conecta(){
+/*
+* @return TRUE se conectou ao servidor FALSE cc.
+*/
+public boolean conecta(){
   try {
-      //Instancia do atributo conexao do tipo Socket,
-      // conecta a IP do Servidor, Porta
-      Socket socket = new Socket("127.0.0.1", 5555);
-      //Instancia do atributo saida, obtem os objetos que permitem
-      // controlar o fluxo de comunicação
-      saida = new PrintStream(socket.getOutputStream());
-      String meuNome = JOptionPane.showInputDialog(null,"Digite seu nome: ");
-      //envia o nome digitado para o servidor
-      saida.println(meuNome.toUpperCase());
-      //instancia a thread para ip e porta conectados e depois inicia ela
-      Thread thread = new Cliente(socket);
+      
+      String nome = JOptionPane.showInputDialog(null,"Digite seu nome: ");
+      
+      if(nome == null || nome.isEmpty())
+        return false;
+      
+      Socket socket = new Socket("127.0.0.1", 5555);// conectando ao IP do Servidor e Porta
+
+      saida = new PrintStream(socket.getOutputStream());// controle do fluxo de comunicação com o servidor
+        
+      saida.println(nome.toUpperCase());//envia o nome digitado para o servidor
+      
+      this.jogador = new Cliente(socket,nome);
+      Thread thread = jogador;
       thread.start();
-      //Cria a variavel msg responsavel por enviar a mensagem para o servidor
-      String msg;
-      //while (true)
-      //{
-        // cria linha para digitação da mensagem e a armazena na variavel msg
-        //System.out.print("Mensagem > ");
-        // envia a mensagem para o servidor
-        saida.println(this.tabuleiro);
-     //}
+
+      return true;
    } catch (IOException e) {
       System.out.println("Falha na Conexao... .. ." + " IOException: " + e);
    }
+   return false;
 }
 
 public void draw(){
-  desenhaCabecalho();
-  desenhaSelecionados();
-  desenhaTabuleiro(larguraMax,alturaMax);
-  boolean vencedor = haVencedor();
-  
-  if(vencedor)
-  {
-    noLoop();
-    if(vez == 1)
+  if(conectado){
+    desenhaCabecalho();
+    desenhaTabuleiro(larguraMax,alturaMax);
+    desenhaSelecionados();
+    boolean vencedor = haVencedor();
+    
+    if(vencedor)
     {
-      JOptionPane.showMessageDialog(null,"Jogador 1 é o vencedor!");
+      noLoop();
+      if(vez == 1)
+      {
+        JOptionPane.showMessageDialog(null,this.jogador.getNome()+" é o vencedor!");
+      }
+      else
+      {
+        JOptionPane.showMessageDialog(null,this.jogador.getContra().getNome()+" é o vencedor!");
+      }
     }
     else
     {
-      JOptionPane.showMessageDialog(null,"Jogador 2 é o vencedor!");
+      if(selecionado == 9){
+        noLoop();
+        JOptionPane.showMessageDialog(null,"Jogo empatado!");
+      }
     }
   }
-  else
-  {
-    if(selecionado == 9){
-      noLoop();
-      JOptionPane.showMessageDialog(null,"Jogo empatado!");
-    }
+  else{
+    noLoop();
+    JOptionPane.showMessageDialog(null,"Não foi possivel conectar-se ao servidor.");
+    System.exit(0);
   }
 }
 
 public void mouseClicked() {
   selecao();
-  //printTab();
 }
 
 public void selecao(){
@@ -295,6 +316,7 @@ public void desenhaTabuleiro(int largura, int altura){
 
 public void desenhaCabecalho(){
   redraw();
+  background(0xff9900);
   textAlign(CENTER);
   if(vez == 0){
     fill(0, 100, 0);
@@ -303,7 +325,7 @@ public void desenhaCabecalho(){
   {
     fill(255, 0, 0);
   }
-  text("Jogador 1", 100, alturaCab/2+10);
+  text(this.jogador.getNome(), 100, alturaCab/2+10);
   noFill();
   noStroke();
   
@@ -314,7 +336,7 @@ public void desenhaCabecalho(){
   {
     fill(255, 0, 0);
   }
-  text("Jogador 2", larguraMax-100, alturaCab/2+10);
+  text(this.jogador.getContra().getNome(), larguraMax-100, alturaCab/2+10);
   noFill();
   noStroke();
   rect(0,0, larguraMax, alturaCab);
@@ -366,51 +388,3 @@ public boolean haVencedor()
   return false;
 }
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.net.Socket;
-
-public class Cliente extends Thread {
-  
-    // parte que controla a recepção de mensagens do cliente
-    private Socket conexao;
-    // construtor que recebe o socket do cliente
-    public Cliente(Socket socket) {
-        this.conexao = socket;
-    }
-    
-    // execução da thread
-    public void run()
-    {
-        try {
-            //recebe mensagens de outro cliente através do servidor
-            BufferedReader entrada =
-                new BufferedReader(new InputStreamReader(this.conexao.getInputStream()));
-            //cria variavel de mensagem
-            String msg;
-            while (true)
-            {
-                // pega o que o servidor enviou
-                msg = entrada.readLine();
-                //se a mensagem contiver dados, passa pelo if,
-                // caso contrario cai no break e encerra a conexao
-                if (msg == null) {
-                    System.out.println("Conexão encerrada!");
-                    System.exit(0);
-                }
-                System.out.println();
-                //imprime a mensagem recebida
-                System.out.println(msg);
-                //cria uma linha visual para resposta
-                System.out.print("Responder > ");
-            }
-        } catch (IOException e) {
-            // caso ocorra alguma exceção de E/S, mostra qual foi.
-            System.out.println("Ocorreu uma Falha... .. ." +
-                " IOException: " + e);
-        }
-    }
-    
-}
