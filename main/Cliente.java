@@ -188,30 +188,28 @@ public class Cliente extends Thread{
   
     public void setSelecionado(int escLin, int escCol){
       if(this.tabuleiro[escLin][escCol] != 1){
-        this.tabuleiro[escLin][escCol] = 1;
-        selecionado++;
         //String escolha = "bola";
         //JOptionPane.showMessageDialog(null,"VEZ: "+vez);
         if(this.vez == 1){
           //escolha = "bola";
+          this.tabuleiro[escLin][escCol] = 1;
+          this.selecionado++;
           this.vez = 0;
           this.jogador2.vez = 1;
+          //enviando a posição selecionada para o outro jogador
+          String m = "*"+escLin+","+escCol+"#"+this.escolha;
+          try{
+            send(m);
+          }catch(IOException e){
+            System.out.println(e);
+          }
+          this.tabEscolhido[escLin][escCol] = this.escolha;
         }
         else if(this.vez == 0)
         {
-          //escolha = "x";
-          this.vez = 1;
-          this.jogador2.vez = 0;
+          JOptionPane.showMessageDialog(null," Por favor, espere por sua vez! :D");
         }
-        //enviando a posição selecionada para o outro jogador
-        String m = "*"+escLin+","+escCol+"#"+this.escolha;
-        //System.out.println(m);
-        try{
-          send(m);
-        }catch(IOException e){
-          System.out.println(e);
-        }
-        this.tabEscolhido[escLin][escCol] = this.escolha;
+        
       }
   
    }  

@@ -113,7 +113,7 @@ public void draw(){
     }
     else
     {
-      if(selecionado == 9){
+      if(jogador.selecionado == 9){
         noLoop();
         JOptionPane.showMessageDialog(null,"Jogo empatado!");
       }
@@ -194,33 +194,7 @@ public void selecao(){
   }
   
   jogador.setSelecionado(escLin,escCol);
-/*
-  if(this.jogador.tabuleiro[escLin][escCol] != 1){
-    this.jogador.tabuleiro[escLin][escCol] = 1;
-    selecionado++;
-    String escolha = "bola";
-    if(this.jogador.vez == 1){
-      escolha = "bola";
-      this.jogador.vez = 0;
-      this.jogador.getContra().vez = 1;
-    }
-    else if(this.jogador.vez == 0)
-    {
-      escolha = "x";
-      this.jogador.vez = 1;
-      this.jogador.getContra().vez = 0;
-    }
-    //enviando a posição para o outro jogador
-    String m = "*"+escLin+","+escCol+"#"+escolha;
-    //System.out.println(m);
-    try{
-      jogador.send(m);
-    }catch(IOException e){
-      System.out.println(e);
-    }
-    this.jogador.tabEscolhido[escLin][escCol] = escolha;
-  }
-  */
+
 }
 
 public void selecionados(int line, int column){
@@ -371,17 +345,6 @@ public void desenhaCabecalho(){
   noStroke();
   rect(0,0, larguraMax, alturaCab);
 }
-
-/*
-public void preencheTab(){
-  for(int i = 0; i < tabuleiro.length; i++){
-    for(int j = 0; j < tabuleiro.length; j++){
-      this.tabuleiro[i][j] = 0;
-      this.tabEscolhido[i][j] = "";
-    }
-  }
-}
-*/
 
 public void printTab(){
   for(int i = 0; i < this.jogador.tabuleiro.length; i++){
