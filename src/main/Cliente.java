@@ -95,7 +95,13 @@ public class Cliente extends Thread{
                *  Iniciar com 'onew' aceita pedido de jogar novamente
                *  Igual ACP aceito pedido de iniciar partida
                *  Igual NACP pedido de iniciar partida não aceito.
+               *  Iniciar com '::' anuncia o vencedor.
                */
+               if(msg.startsWith("::")){
+                 JOptionPane.showMessageDialog(null,msg.substring(2),"Mensagem",JOptionPane.INFORMATION_MESSAGE);
+                 preencheTab();
+               }
+               
                if(msg.startsWith("new")){
                  String nome = msg.substring(3,msg.length());
                  int conf = JOptionPane.showConfirmDialog(null,":'( "+nome+" lhe venceu e está lhe oferecendo uma revanche. Aceita?","Mensagem",JOptionPane.OK_OPTION,JOptionPane.QUESTION_MESSAGE);
@@ -156,7 +162,7 @@ public class Cliente extends Thread{
                   String nm = msg.substring(1,msg.length());
                   this.vez = 0;
                   //int a = JOptionPane.showConfirmDialog(null,nome+", "+nm+" lhe convidou para iniciar uma nova partida. Aceita?","Solicitação de Partida",JOptionPane.OK_OPTION,JOptionPane.QUESTION_MESSAGE);
-                  this.jogador2 = new Cliente(nm,1);
+                  this.jogador2 = new Cliente(nm,1,true);
                }
                
                if(msg.equals("@")){
@@ -202,7 +208,7 @@ public class Cliente extends Thread{
     public void setSelecionado(int escLin, int escCol){
       if(this.tabuleiro[escLin][escCol] != 1){
         
-        if(this.online){
+        if(this.jogador2.online){
           //String escolha = "bola";
           //JOptionPane.showMessageDialog(null,"VEZ: "+vez);
           if(this.vez == 1){
@@ -250,7 +256,7 @@ public class Cliente extends Thread{
      return this.conexao;
    }
   
-   public void vencedor(){
+   public boolean vencedor(){
       String winner;
       if(this.vez == 0)
       {
@@ -260,8 +266,24 @@ public class Cliente extends Thread{
       {
         winner = this.jogador2.getNome();
       }
+      String msg = winner+" é o vencedor!";
+      if(this.jogador2.online){
       
-      JOptionPane.showMessageDialog(null,winner+" é o vencedor!","Mensagem",JOptionPane.INFORMATION_MESSAGE);
+        try{
+          send("::"+msg);
+        }
+        catch(IOException e)
+        {
+          System.out.println(e);
+        }
+         
+      }
+      else{
+        JOptionPane.showMessageDialog(null,msg+"!","Mensagem",JOptionPane.INFORMATION_MESSAGE);
+        this.preencheTab();
+        return true;
+      }
+      return false;
       /*
       if(conf == 0){
         this.preencheTab();//Reinicia tabuleiro.

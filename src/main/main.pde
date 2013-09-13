@@ -90,7 +90,10 @@ public void draw(){
     if(vencedor)
     {
       noLoop();
-      this.jogador.vencedor(); //Informa o vencedor
+      if(this.jogador.vencedor())
+      {
+        loop();
+      }
     }
     else
     {
