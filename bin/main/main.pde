@@ -1,7 +1,7 @@
 import java.util.*;
 
 import javax.swing.JOptionPane;
-
+  
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -90,25 +90,9 @@ public void draw(){
     if(vencedor)
     {
       noLoop();
-      String winner;
-      if(this.jogador.vez == 1)
+      if(this.jogador.vencedor())
       {
-        winner = this.jogador.getNome();
-      }
-      else
-      {
-        winner = this.jogador.getContra().getNome();
-      }
-      
-      int conf = JOptionPane.showConfirmDialog(null,winner+" é o vencedor!\nDeseja jogar novamente?","Mensagem",JOptionPane.OK_OPTION,JOptionPane.INFORMATION_MESSAGE);
-      if(conf == 0){
-        this.jogador.preencheTab();//Reinicia tabuleiro.
         loop();
-        try{
-           this.jogador.send("new"+winner);
-        }catch(IOException e){
-           System.out.println("Erro VENCEDOR "+e);
-        }
       }
     }
     else
@@ -324,6 +308,18 @@ public void desenhaCabecalho(){
   textAlign(CENTER);
   if(this.jogador.vez == 1){
     fill(0, 100, 0);
+    imageMode(CENTER);
+    if(this.jogador.getContra().online){
+      if(this.jogador.getEscolha().equals("x")){
+        image(imgB,(float)30,(float)alturaCab/2,(float)40,(float)40);
+      }
+      else{
+        image(imgX,(float)30,(float)alturaCab/2,(float)40,(float)40);
+      }
+    }
+    else{
+      image(imgX,(float)30,(float)alturaCab/2,(float)40,(float)40);
+    }
   }
   else
   {
@@ -335,12 +331,24 @@ public void desenhaCabecalho(){
   
   if(this.jogador.vez == 0){
     fill(0, 100, 0);
+    
+    if(this.jogador.getContra().online){
+      if(this.jogador.getEscolha().equals("x")){
+        image(imgX,(float)larguraMax-40,(float)alturaCab/2,(float)40,(float)40);
+      }
+      else{
+        image(imgB,(float)larguraMax-40,(float)alturaCab/2,(float)40,(float)40);
+      }
+    }
+    else{
+      image(imgB,(float)larguraMax-40,(float)alturaCab/2,(float)40,(float)40);
+    }
   }
   else
   {
     fill(255, 0, 0);
   }
-  text(this.jogador.getContra().getNome(), larguraMax-100, alturaCab/2+10);
+  text(this.jogador.getContra().getNome(), larguraMax-140, alturaCab/2+10);
   noFill();
   noStroke();
   rect(0,0, larguraMax, alturaCab);

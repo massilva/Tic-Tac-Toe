@@ -19,7 +19,7 @@ public class Cliente extends Thread{
     public String [] [] tabEscolhido = new String[3][3];
     public int vez, selecionado;
     private String escolha;
-    private boolean online;
+    public boolean online;
     
     public Cliente(String nome){
         this.nome = nome;
@@ -124,6 +124,7 @@ public class Cliente extends Thread{
                   int j = Integer.parseInt(pos[1]);
                   this.tabuleiro[i][j] = 1;
                   this.tabEscolhido[i][j] = escolhido;
+                  this.selecionado++;
                   this.vez = 1; 
                   this.jogador2.vez = 0;
                   if(escolhido.equals("x"))
@@ -297,5 +298,9 @@ public class Cliente extends Thread{
       return false;
       */
       
+   }
+  
+   public String getEscolha(){
+     return this.escolha;
    } 
 }

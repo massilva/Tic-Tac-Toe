@@ -308,6 +308,18 @@ public void desenhaCabecalho(){
   textAlign(CENTER);
   if(this.jogador.vez == 1){
     fill(0, 100, 0);
+    imageMode(CENTER);
+    if(this.jogador.getContra().online){
+      if(this.jogador.getEscolha().equals("x")){
+        image(imgX,(float)30,(float)alturaCab/2,(float)40,(float)40);
+      }
+      else{
+        image(imgB,(float)30,(float)alturaCab/2,(float)40,(float)40);
+      }
+    }
+    else{
+      image(imgX,(float)30,(float)alturaCab/2,(float)40,(float)40);
+    }
   }
   else
   {
@@ -319,12 +331,24 @@ public void desenhaCabecalho(){
   
   if(this.jogador.vez == 0){
     fill(0, 100, 0);
+    imageMode(CENTER);
+    if(this.jogador.getContra().online){
+      if(this.jogador.getEscolha().equals("x")){
+        image(imgB,(float)larguraMax-40,(float)alturaCab/2,(float)40,(float)40);
+      }
+      else{
+        image(imgX,(float)larguraMax-40,(float)alturaCab/2,(float)40,(float)40);
+      }
+    }
+    else{
+      image(imgB,(float)larguraMax-40,(float)alturaCab/2,(float)40,(float)40);
+    }
   }
   else
   {
     fill(255, 0, 0);
   }
-  text(this.jogador.getContra().getNome(), larguraMax-100, alturaCab/2+10);
+  text(this.jogador.getContra().getNome(), larguraMax-140, alturaCab/2+10);
   noFill();
   noStroke();
   rect(0,0, larguraMax, alturaCab);
