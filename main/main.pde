@@ -18,10 +18,13 @@ PImage imgB = loadImage(curDir+"/tic-tac-toe/assets/bola.png");
 /*
 * Variaveis de controle do jogo
 */
-int selecionado = 0; //qtd. dos quadrinhos já selecionados. Max. 9
-int vez = (int)random(0,2); //Sorteando que vai começar
+public static int selecionado = 0; //qtd. dos quadrinhos já selecionados. Max. 9
+//int vez = (int)random(0,2); //Sorteando que vai começar
+//ver = 1 Jogador 1, vez = 0 Jogador Contra
+/*
 int [] [] tabuleiro = new int[3][3]; 
 String [] [] tabEscolhido = new String[3][3];
+*/
 
 /*
 * Var. das dimensões usadas
@@ -46,7 +49,7 @@ public void setup() {
   //size(displayWidth,displayHeight);
   size(larguraMax,alturaMax+alturaCab);
   background(0xff9900);
-  preencheTab();
+  //preencheTab();
 }
 
 /*
@@ -64,7 +67,7 @@ public boolean conecta(){
 
       saida = new PrintStream(socket.getOutputStream());// controle do fluxo de comunicação com o servidor
         
-      saida.println(nome.toUpperCase());//envia o nome digitado para o servidor
+      saida.println(nome);//envia o nome digitado para o servidor
       
       this.jogador = new Cliente(socket,nome);
       Thread thread = jogador;
@@ -87,13 +90,25 @@ public void draw(){
     if(vencedor)
     {
       noLoop();
-      if(vez == 1)
+      String winner;
+      if(this.jogador.vez == 1)
       {
-        JOptionPane.showMessageDialog(null,this.jogador.getNome()+" é o vencedor!");
+        winner = this.jogador.getNome();
       }
       else
       {
-        JOptionPane.showMessageDialog(null,this.jogador.getContra().getNome()+" é o vencedor!");
+        winner = this.jogador.getContra().getNome();
+      }
+      
+      int conf = JOptionPane.showConfirmDialog(null,winner+" é o vencedor!\nDeseja jogar novamente?","Mensagem",JOptionPane.OK_OPTION,JOptionPane.INFORMATION_MESSAGE);
+      if(conf == 0){
+        this.jogador.preencheTab();//Reinicia tabuleiro.
+        try{
+           this.jogador.send("new"+winner);
+        }catch(IOException e){
+           System.out.println("Erro VENCEDOR "+e);
+        }
+           
       }
     }
     else
@@ -177,23 +192,35 @@ public void selecao(){
       escLin = 2;//"linhatres";
     }
   }
-
-  if(this.tabuleiro[escLin][escCol] != 1){
-    this.tabuleiro[escLin][escCol] = 1;
+  
+  jogador.setSelecionado(escLin,escCol);
+/*
+  if(this.jogador.tabuleiro[escLin][escCol] != 1){
+    this.jogador.tabuleiro[escLin][escCol] = 1;
     selecionado++;
     String escolha = "bola";
-    if(this.vez == 1){
+    if(this.jogador.vez == 1){
       escolha = "bola";
-      this.vez = 0;
+      this.jogador.vez = 0;
+      this.jogador.getContra().vez = 1;
     }
-    else if(this.vez == 0)
+    else if(this.jogador.vez == 0)
     {
       escolha = "x";
-      this.vez = 1;
+      this.jogador.vez = 1;
+      this.jogador.getContra().vez = 0;
     }
-    this.tabEscolhido[escLin][escCol] = escolha;
+    //enviando a posição para o outro jogador
+    String m = "*"+escLin+","+escCol+"#"+escolha;
+    //System.out.println(m);
+    try{
+      jogador.send(m);
+    }catch(IOException e){
+      System.out.println(e);
+    }
+    this.jogador.tabEscolhido[escLin][escCol] = escolha;
   }
-  
+  */
 }
 
 public void selecionados(int line, int column){
@@ -241,7 +268,7 @@ public void selecionados(int line, int column){
    /** menor dimensao **/
   int dimensaoImg = posFX - posIX;
 
-  showIn(posIX, posIY, posFX, posFY, this.tabEscolhido[escLin][escCol], dimensaoImg);
+  showIn(posIX, posIY, posFX, posFY, this.jogador.tabEscolhido[escLin][escCol], dimensaoImg);
   
 }
 
@@ -282,9 +309,9 @@ public void desenhaObjeto(int x, int y, int posIX, int posIY, int dimensao,Strin
 }
 
 public void desenhaSelecionados(){
-  for(int i = 0; i < this.tabuleiro.length; i++){
-    for(int j = 0; j < this.tabuleiro.length; j++){
-      if(this.tabuleiro[i][j] == 1){
+  for(int i = 0; i < this.jogador.tabuleiro.length; i++){
+    for(int j = 0; j < this.jogador.tabuleiro.length; j++){
+      if(this.jogador.tabuleiro[i][j] == 1){
         selecionados(i, j);
       }
     }
@@ -314,11 +341,14 @@ public void desenhaTabuleiro(int largura, int altura){
     
 }
 
+/*
+*  Se Vez = 0 vez é do adversário
+*/
 public void desenhaCabecalho(){
   redraw();
   background(0xff9900);
   textAlign(CENTER);
-  if(vez == 0){
+  if(this.jogador.vez == 1){
     fill(0, 100, 0);
   }
   else
@@ -329,7 +359,7 @@ public void desenhaCabecalho(){
   noFill();
   noStroke();
   
-  if(vez == 1){
+  if(this.jogador.vez == 0){
     fill(0, 100, 0);
   }
   else
@@ -342,6 +372,7 @@ public void desenhaCabecalho(){
   rect(0,0, larguraMax, alturaCab);
 }
 
+/*
 public void preencheTab(){
   for(int i = 0; i < tabuleiro.length; i++){
     for(int j = 0; j < tabuleiro.length; j++){
@@ -350,11 +381,12 @@ public void preencheTab(){
     }
   }
 }
+*/
 
 public void printTab(){
-  for(int i = 0; i < tabuleiro.length; i++){
-    for(int j = 0; j < tabuleiro.length; j++){
-      System.out.print(this.tabuleiro[i][j]);
+  for(int i = 0; i < this.jogador.tabuleiro.length; i++){
+    for(int j = 0; j < this.jogador.tabuleiro.length; j++){
+      System.out.print(this.jogador.tabuleiro[i][j]);
     }
     System.out.println();
   }
@@ -364,18 +396,18 @@ public boolean haVencedor()
 {
   try
   {
-    for(int i = 0; i < this.tabEscolhido.length; i++)
+    for(int i = 0; i < this.jogador.tabEscolhido.length; i++)
     {
-      if((!this.tabEscolhido[i][0].isEmpty() && this.tabEscolhido[i][0].equals(this.tabEscolhido[i][1]) && this.tabEscolhido[i][1].equals(this.tabEscolhido[i][2])) 
-      ||(!this.tabEscolhido[0][i].isEmpty() && this.tabEscolhido[0][i].equals(this.tabEscolhido[1][i]) && this.tabEscolhido[1][i].equals(this.tabEscolhido[2][i])))
+      if((!this.jogador.tabEscolhido[i][0].isEmpty() && this.jogador.tabEscolhido[i][0].equals(this.jogador.tabEscolhido[i][1]) && this.jogador.tabEscolhido[i][1].equals(this.jogador.tabEscolhido[i][2])) 
+      ||(!this.jogador.tabEscolhido[0][i].isEmpty() && this.jogador.tabEscolhido[0][i].equals(this.jogador.tabEscolhido[1][i]) && this.jogador.tabEscolhido[1][i].equals(this.jogador.tabEscolhido[2][i])))
       {
         return true;
       }
     }
     
     //Diagonais
-    if((!this.tabEscolhido[0][0].isEmpty() && this.tabEscolhido[0][0].equals(this.tabEscolhido[1][1]) && this.tabEscolhido[1][1].equals(this.tabEscolhido[2][2])) 
-    ||(!this.tabEscolhido[0][2].isEmpty() && this.tabEscolhido[0][2].equals(this.tabEscolhido[1][1]) && this.tabEscolhido[1][1].equals(this.tabEscolhido[2][0])))
+    if((!this.jogador.tabEscolhido[0][0].isEmpty() && this.jogador.tabEscolhido[0][0].equals(this.jogador.tabEscolhido[1][1]) && this.jogador.tabEscolhido[1][1].equals(this.jogador.tabEscolhido[2][2])) 
+    ||(!this.jogador.tabEscolhido[0][2].isEmpty() && this.jogador.tabEscolhido[0][2].equals(this.jogador.tabEscolhido[1][1]) && this.jogador.tabEscolhido[1][1].equals(this.jogador.tabEscolhido[2][0])))
     {
       return true;
     }
